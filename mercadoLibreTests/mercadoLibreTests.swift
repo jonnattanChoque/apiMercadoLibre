@@ -7,9 +7,11 @@
 
 import XCTest
 @testable import mercadoLibre
+import Alamofire
 
 class mercadoLibreTests: XCTestCase {
 
+    //Pruebas de funciones de lógica de negocio, helpers y métodos
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -18,16 +20,43 @@ class mercadoLibreTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
+    func testAlamofireConsume() throws {
+        let e = expectation(description: "Alamofire")
+        let urlString = "https://api.mercadolibre.com/sites/MLA/search?q="
+        
+        Alamofire.request(urlString)
+            .response { response in
+                XCTAssertNil(response.error, "Whoops, error \(response.error!.localizedDescription)")
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+                XCTAssertNotNil(response, "No response")
+                XCTAssertEqual(response.response?.statusCode ?? 0, 200, "Status code not 200")
+
+                e.fulfill()
         }
-    }
 
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+    
+    func testConvertPrice(){
+        let price = Double(20091.24)
+        let resultPrice = "$20,091.24"
+        let helper = Helpers.convertPrice(number: price)
+        XCTAssertEqual(helper, resultPrice)
+    }
+    
+    func testInternet(){
+        let hasInternet = true
+        let getInternetConn = Connection.isConnectedToNetwork()
+        XCTAssertEqual(hasInternet, getInternetConn)
+    }
+    
+    
+    func testUpdateLabelView() throws{
+        let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ViewController") as! ViewController
+        vc.loadViewIfNeeded()
+        
+        let stringTest = "Prueba"
+        vc.updateLabel(title: stringTest)
+        XCTAssertEqual(vc.titleLbl.text, stringTest)
+    }
 }
